@@ -48447,7 +48447,7 @@ exports.providerConfigSchema = zod_1.z
  * Translation configuration schema
  */
 exports.translationConfigSchema = zod_1.z.object({
-    batchSize: zod_1.z.number().int().positive().max(1000).default(10),
+    batchSize: zod_1.z.number().int().positive().max(200).default(10),
     maxRetries: zod_1.z.number().int().min(0).max(10).default(3),
     retryDelayMs: zod_1.z.number().int().positive().max(60000).default(1000),
     rateLimitPerMinute: zod_1.z.number().int().positive().optional(),
@@ -48500,7 +48500,7 @@ exports.configFileSchema = zod_1.z.object({
         .optional(),
     translation: zod_1.z
         .object({
-        batchSize: zod_1.z.number().int().positive().max(1000).optional(),
+        batchSize: zod_1.z.number().int().positive().max(200).optional(),
         maxRetries: zod_1.z.number().int().min(0).max(10).optional(),
         retryDelayMs: zod_1.z.number().int().positive().max(60000).optional(),
         rateLimitPerMinute: zod_1.z.number().int().positive().optional(),
@@ -52496,7 +52496,7 @@ class BaseTranslator {
      * Get max tokens setting
      */
     getMaxTokens() {
-        return this.config.maxTokens ?? 4096;
+        return this.config.maxTokens ?? 16384;
     }
     /**
      * Get temperature setting
@@ -53106,6 +53106,71 @@ class TranslationOrchestrator {
         }
         if (errors > 0) {
             logger_1.logger.warning(`${errors} batch(es) failed during translation`);
+        }
+        // Retry missing units
+        const translatedIds = new Set(allTranslations.map(t => t.id));
+        const missingUnits = request.units.filter(u => !translatedIds.has(u.id));
+        if (missingUnits.length > 0) {
+            logger_1.logger.info(`Retrying ${missingUnits.length} missing unit(s)...`);
+            const retryResponse = await this.retryMissingUnits(missingUnits, request);
+            allTranslations.push(...retryResponse.translations);
+            if (retryResponse.usage) {
+                totalInputTokens += retryResponse.usage.inputTokens;
+                totalOutputTokens += retryResponse.usage.outputTokens;
+            }
+        }
+        return {
+            translations: allTranslations,
+            usage: totalInputTokens > 0 || totalOutputTokens > 0
+                ? { inputTokens: totalInputTokens, outputTokens: totalOutputTokens }
+                : undefined,
+            provider: this.translator.providerName,
+            model: this.translator.getModel(),
+        };
+    }
+    /**
+     * Retry translating missing units with smaller batch sizes
+     */
+    async retryMissingUnits(missingUnits, originalRequest, maxRetries = 2) {
+        const allTranslations = [];
+        let totalInputTokens = 0;
+        let totalOutputTokens = 0;
+        let remainingUnits = [...missingUnits];
+        for (let attempt = 0; attempt < maxRetries && remainingUnits.length > 0; attempt++) {
+            // Use smaller batches for retries (5 units max)
+            const retryBatchSize = Math.min(5, Math.ceil(this.options.batchSize / 10));
+            const batches = (0, batcher_1.createBatches)(remainingUnits, {
+                maxBatchSize: retryBatchSize,
+                maxTokensPerBatch: this.options.maxTokensPerBatch,
+            });
+            logger_1.logger.debug(`Retry attempt ${attempt + 1}: ${remainingUnits.length} units in ${batches.length} batches`);
+            for (const batch of batches) {
+                try {
+                    await this.rateLimiter.acquire();
+                    const batchRequest = {
+                        ...originalRequest,
+                        units: batch.units,
+                    };
+                    const result = await this.translator.translate(batchRequest);
+                    allTranslations.push(...result.translations);
+                    if (result.usage) {
+                        totalInputTokens += result.usage.inputTokens;
+                        totalOutputTokens += result.usage.outputTokens;
+                    }
+                }
+                catch (error) {
+                    logger_1.logger.warning(`Retry batch failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+                }
+            }
+            // Check what's still missing
+            const translatedIds = new Set(allTranslations.map(t => t.id));
+            remainingUnits = remainingUnits.filter(u => !translatedIds.has(u.id));
+        }
+        if (remainingUnits.length > 0) {
+            logger_1.logger.warning(`${remainingUnits.length} unit(s) could not be translated after retries`);
+            for (const unit of remainingUnits) {
+                logger_1.logger.warning(`  Failed unit: ${unit.id}`);
+            }
         }
         return {
             translations: allTranslations,

@@ -131,7 +131,7 @@ describe('Config Schema', () => {
     });
 
     it('should reject invalid batch size', () => {
-      const config = { batchSize: 200 };
+      const config = { batchSize: 201 };
 
       expect(() => translationConfigSchema.parse(config)).toThrow();
     });

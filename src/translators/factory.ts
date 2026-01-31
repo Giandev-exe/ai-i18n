@@ -178,6 +178,94 @@ export class TranslationOrchestrator {
       logger.warning(`${errors} batch(es) failed during translation`);
     }
 
+    // Retry missing units
+    const translatedIds = new Set(allTranslations.map(t => t.id));
+    const missingUnits = request.units.filter(u => !translatedIds.has(u.id));
+
+    if (missingUnits.length > 0) {
+      logger.info(`Retrying ${missingUnits.length} missing unit(s)...`);
+
+      const retryResponse = await this.retryMissingUnits(missingUnits, request);
+
+      allTranslations.push(...retryResponse.translations);
+
+      if (retryResponse.usage) {
+        totalInputTokens += retryResponse.usage.inputTokens;
+        totalOutputTokens += retryResponse.usage.outputTokens;
+      }
+    }
+
+    return {
+      translations: allTranslations,
+      usage:
+        totalInputTokens > 0 || totalOutputTokens > 0
+          ? { inputTokens: totalInputTokens, outputTokens: totalOutputTokens }
+          : undefined,
+      provider: this.translator.providerName,
+      model: this.translator.getModel(),
+    };
+  }
+
+  /**
+   * Retry translating missing units with smaller batch sizes
+   */
+  private async retryMissingUnits(
+    missingUnits: TranslationRequest['units'],
+    originalRequest: TranslationRequest,
+    maxRetries = 2
+  ): Promise<TranslationResponse> {
+    const allTranslations: TranslationResponse['translations'] = [];
+    let totalInputTokens = 0;
+    let totalOutputTokens = 0;
+    let remainingUnits = [...missingUnits];
+
+    for (let attempt = 0; attempt < maxRetries && remainingUnits.length > 0; attempt++) {
+      // Use smaller batches for retries (5 units max)
+      const retryBatchSize = Math.min(5, Math.ceil(this.options.batchSize / 10));
+      const batches = createBatches(remainingUnits, {
+        maxBatchSize: retryBatchSize,
+        maxTokensPerBatch: this.options.maxTokensPerBatch,
+      });
+
+      logger.debug(
+        `Retry attempt ${attempt + 1}: ${remainingUnits.length} units in ${batches.length} batches`
+      );
+
+      for (const batch of batches) {
+        try {
+          await this.rateLimiter.acquire();
+
+          const batchRequest: TranslationRequest = {
+            ...originalRequest,
+            units: batch.units,
+          };
+
+          const result = await this.translator.translate(batchRequest);
+          allTranslations.push(...result.translations);
+
+          if (result.usage) {
+            totalInputTokens += result.usage.inputTokens;
+            totalOutputTokens += result.usage.outputTokens;
+          }
+        } catch (error) {
+          logger.warning(
+            `Retry batch failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+          );
+        }
+      }
+
+      // Check what's still missing
+      const translatedIds = new Set(allTranslations.map(t => t.id));
+      remainingUnits = remainingUnits.filter(u => !translatedIds.has(u.id));
+    }
+
+    if (remainingUnits.length > 0) {
+      logger.warning(`${remainingUnits.length} unit(s) could not be translated after retries`);
+      for (const unit of remainingUnits) {
+        logger.warning(`  Failed unit: ${unit.id}`);
+      }
+    }
+
     return {
       translations: allTranslations,
       usage:

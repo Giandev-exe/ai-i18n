@@ -51,6 +51,10 @@ export declare class TranslationOrchestrator {
      */
     translate(request: TranslationRequest): Promise<TranslationResponse>;
     /**
+     * Retry translating missing units with smaller batch sizes
+     */
+    private retryMissingUnits;
+    /**
      * Get the underlying translator
      */
     getTranslator(): BaseTranslator;
