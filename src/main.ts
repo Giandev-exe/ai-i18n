@@ -282,7 +282,7 @@ async function processFile(
 
   // Log how many units actually got translations
   const unitsWithTargets = updatedUnits.filter(u => u.target).length;
-  logger.debug(`Units with translations: ${unitsWithTargets}/${updatedUnits.length}`);
+  logger.info(`Units with translations after merge: ${unitsWithTargets}/${updatedUnits.length}`);
 
   // Write to language-specific output file if not dry run
   if (!config.dryRun) {
@@ -295,15 +295,15 @@ async function processFile(
         format: config.files.format === 'auto' ? undefined : config.files.format,
       });
 
-      logger.debug(
-        `Existing file has ${existingExtract.units.length} units, merging with ${updatedUnits.length} updated units`
+      logger.info(
+        `Output file exists with ${existingExtract.units.length} units, merging with ${updatedUnits.length} updated units`
       );
 
       // Merge new translations with existing content
       const mergedUnits = mergeTranslationUnits(existingExtract.units, updatedUnits);
 
       const mergedWithTargets = mergedUnits.filter(u => u.target).length;
-      logger.debug(`Merged result: ${mergedWithTargets}/${mergedUnits.length} units have targets`);
+      logger.info(`After merging with existing: ${mergedWithTargets}/${mergedUnits.length} units have targets`);
 
       await writeTranslations(outputFilePath, existingContent, mergedUnits, existingExtract, {
         markAsTranslated: true,

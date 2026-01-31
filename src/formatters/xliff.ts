@@ -50,10 +50,9 @@ export class XliffFormatter extends BaseFormatter {
 
       const updatedWithTargets = updatedUnits.filter(u => u.target).length;
       const mergedWithTargets = merged.filter(u => u.target).length;
-      logger.debug(
-        `XLIFF format: extractResult has ${extractResult.units.length} units, ` +
-          `updatedUnits has ${updatedUnits.length} (${updatedWithTargets} with targets), ` +
-          `merged has ${merged.length} (${mergedWithTargets} with targets)`
+      logger.info(
+        `XLIFF merge stats: input=${updatedUnits.length} (${updatedWithTargets} with targets), ` +
+          `merged=${merged.length} (${mergedWithTargets} with targets)`
       );
 
       // Parse original to preserve structure
@@ -127,7 +126,11 @@ export class XliffFormatter extends BaseFormatter {
         }
 
         const unit = unitMap.get(id);
-        if (!unit?.target) {
+        if (!unit) {
+          logger.debug(`Unit ${id} not found in unitMap`);
+          return;
+        }
+        if (!unit.target) {
           return;
         }
 
@@ -172,7 +175,9 @@ export class XliffFormatter extends BaseFormatter {
       }
     });
 
-    logger.debug(`XLIFF formatter: found ${foundCount} trans-units, updated ${updatedCount}`);
+    logger.info(
+      `XLIFF formatter: found ${foundCount} trans-units in XML, updated ${updatedCount} with translations`
+    );
   }
 
   /**

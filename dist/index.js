@@ -50328,9 +50328,8 @@ class XliffFormatter extends base_1.BaseFormatter {
             const changes = (0, base_1.countChanges)(extractResult.units, updatedUnits);
             const updatedWithTargets = updatedUnits.filter(u => u.target).length;
             const mergedWithTargets = merged.filter(u => u.target).length;
-            logger_1.logger.debug(`XLIFF format: extractResult has ${extractResult.units.length} units, ` +
-                `updatedUnits has ${updatedUnits.length} (${updatedWithTargets} with targets), ` +
-                `merged has ${merged.length} (${mergedWithTargets} with targets)`);
+            logger_1.logger.info(`XLIFF merge stats: input=${updatedUnits.length} (${updatedWithTargets} with targets), ` +
+                `merged=${merged.length} (${mergedWithTargets} with targets)`);
             // Parse original to preserve structure
             const parsed = this.parser.parse(originalContent);
             // Update based on format version
@@ -50386,7 +50385,11 @@ class XliffFormatter extends base_1.BaseFormatter {
                     return;
                 }
                 const unit = unitMap.get(id);
-                if (!unit?.target) {
+                if (!unit) {
+                    logger_1.logger.debug(`Unit ${id} not found in unitMap`);
+                    return;
+                }
+                if (!unit.target) {
                     return;
                 }
                 updatedCount++;
@@ -50418,7 +50421,7 @@ class XliffFormatter extends base_1.BaseFormatter {
                 }
             }
         });
-        logger_1.logger.debug(`XLIFF formatter: found ${foundCount} trans-units, updated ${updatedCount}`);
+        logger_1.logger.info(`XLIFF formatter: found ${foundCount} trans-units in XML, updated ${updatedCount} with translations`);
     }
     /**
      * Update XLIFF 2.0 structure with translations
@@ -51935,7 +51938,7 @@ async function processFile(config, extractResult, targetLanguage, orchestrator, 
     });
     // Log how many units actually got translations
     const unitsWithTargets = updatedUnits.filter(u => u.target).length;
-    logger_1.logger.debug(`Units with translations: ${unitsWithTargets}/${updatedUnits.length}`);
+    logger_1.logger.info(`Units with translations after merge: ${unitsWithTargets}/${updatedUnits.length}`);
     // Write to language-specific output file if not dry run
     if (!config.dryRun) {
         const absoluteOutputPath = path.resolve(outputFilePath);
@@ -51945,11 +51948,11 @@ async function processFile(config, extractResult, targetLanguage, orchestrator, 
             const existingExtract = (0, factory_1.extractFromFile)(outputFilePath, targetLanguage, {
                 format: config.files.format === 'auto' ? undefined : config.files.format,
             });
-            logger_1.logger.debug(`Existing file has ${existingExtract.units.length} units, merging with ${updatedUnits.length} updated units`);
+            logger_1.logger.info(`Output file exists with ${existingExtract.units.length} units, merging with ${updatedUnits.length} updated units`);
             // Merge new translations with existing content
             const mergedUnits = mergeTranslationUnits(existingExtract.units, updatedUnits);
             const mergedWithTargets = mergedUnits.filter(u => u.target).length;
-            logger_1.logger.debug(`Merged result: ${mergedWithTargets}/${mergedUnits.length} units have targets`);
+            logger_1.logger.info(`After merging with existing: ${mergedWithTargets}/${mergedUnits.length} units have targets`);
             await (0, factory_3.writeTranslations)(outputFilePath, existingContent, mergedUnits, existingExtract, {
                 markAsTranslated: true,
             });
