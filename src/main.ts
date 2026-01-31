@@ -19,7 +19,7 @@ import { createLoopDetector, shouldSkipFromEnv } from './git/commit-detector';
 import { ReportBuilder, publishToActions, createErrorEntry } from './reporter/reporter';
 import { generateMarkdownReport } from './reporter/markdown';
 import { logger } from './utils/logger';
-import { I18nTranslateError } from './utils/errors';
+import { I18nTranslateError, ValidationError } from './utils/errors';
 import { getOutputFilePath } from './utils/output-path';
 
 const HASH_STORE_FILE = '.i18n-hashes.json';
@@ -82,6 +82,10 @@ async function run(): Promise<void> {
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     logger.error(`Action failed: ${message}`);
+
+    if (error instanceof ValidationError) {
+      logger.error(`Validation issues:\n${error.formatIssues()}`);
+    }
 
     if (error instanceof I18nTranslateError) {
       reportBuilder.addError(createErrorEntry(error, error.code));

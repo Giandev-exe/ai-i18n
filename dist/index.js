@@ -51797,6 +51797,9 @@ async function run() {
     catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error';
         logger_1.logger.error(`Action failed: ${message}`);
+        if (error instanceof errors_1.ValidationError) {
+            logger_1.logger.error(`Validation issues:\n${error.formatIssues()}`);
+        }
         if (error instanceof errors_1.I18nTranslateError) {
             reportBuilder.addError((0, reporter_1.createErrorEntry)(error, error.code));
         }
