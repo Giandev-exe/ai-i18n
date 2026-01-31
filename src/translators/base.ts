@@ -48,7 +48,7 @@ export abstract class BaseTranslator {
    * Get max tokens setting
    */
   getMaxTokens(): number {
-    return this.config.maxTokens ?? 4096;
+    return this.config.maxTokens ?? 16384;
   }
 
   /**
