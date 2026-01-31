@@ -1,5 +1,6 @@
 import { XMLBuilder, XMLParser } from 'fast-xml-parser';
 import { FormatterError } from '../utils/errors';
+import { logger } from '../utils/logger';
 import type {
   ExtractResult,
   FormatResult,
@@ -47,6 +48,14 @@ export class XliffFormatter extends BaseFormatter {
       const merged = mergeUnits(extractResult.units, updatedUnits);
       const changes = countChanges(extractResult.units, updatedUnits);
 
+      const updatedWithTargets = updatedUnits.filter(u => u.target).length;
+      const mergedWithTargets = merged.filter(u => u.target).length;
+      logger.debug(
+        `XLIFF format: extractResult has ${extractResult.units.length} units, ` +
+          `updatedUnits has ${updatedUnits.length} (${updatedWithTargets} with targets), ` +
+          `merged has ${merged.length} (${mergedWithTargets} with targets)`
+      );
+
       // Parse original to preserve structure
       const parsed = this.parser.parse(originalContent) as unknown[];
 
@@ -84,11 +93,18 @@ export class XliffFormatter extends BaseFormatter {
    */
   private updateXliff1(parsed: unknown[], units: TranslationUnit[], options?: FormatOptions): void {
     const unitMap = new Map(units.map(u => [u.id, u]));
+    const unitsWithTargets = units.filter(u => u.target).length;
+    logger.debug(`XLIFF formatter: ${unitsWithTargets}/${units.length} units have targets`);
+
+    let foundCount = 0;
+    let updatedCount = 0;
 
     this.walkNodes(parsed, (node: Record<string, unknown>) => {
       if ('trans-unit' in node) {
+        foundCount++;
         const transUnit = node['trans-unit'] as Record<string, unknown>[];
         if (!Array.isArray(transUnit)) {
+          logger.debug(`trans-unit is not an array`);
           return;
         }
 
@@ -99,12 +115,14 @@ export class XliffFormatter extends BaseFormatter {
         );
 
         if (!attrs) {
+          logger.debug(`No attrs found for trans-unit`);
           return;
         }
 
         const attrsObj = attrs[':@'] as Record<string, unknown>;
         const id = attrsObj?.['@_id'] as string | undefined;
         if (!id) {
+          logger.debug(`No id found in attrs`);
           return;
         }
 
@@ -112,6 +130,8 @@ export class XliffFormatter extends BaseFormatter {
         if (!unit?.target) {
           return;
         }
+
+        updatedCount++;
 
         // Find or create target element
         const targetIndex = transUnit.findIndex(
@@ -151,6 +171,8 @@ export class XliffFormatter extends BaseFormatter {
         }
       }
     });
+
+    logger.debug(`XLIFF formatter: found ${foundCount} trans-units, updated ${updatedCount}`);
   }
 
   /**

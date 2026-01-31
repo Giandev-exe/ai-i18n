@@ -269,12 +269,20 @@ async function processFile(
 
   reportBuilder.addTokenUsage(response.usage);
 
+  logger.info(
+    `Received ${response.translations.length} translation(s) for ${unitsToTranslate.length} unit(s)`
+  );
+
   // Merge translations with original units
   const translationMap = new Map(response.translations.map(t => [t.id, t.target]));
   const updatedUnits: TranslationUnit[] = extractResult.units.map(unit => {
     const translation = translationMap.get(unit.id);
     return translation ? { ...unit, target: translation } : unit;
   });
+
+  // Log how many units actually got translations
+  const unitsWithTargets = updatedUnits.filter(u => u.target).length;
+  logger.debug(`Units with translations: ${unitsWithTargets}/${updatedUnits.length}`);
 
   // Write to language-specific output file if not dry run
   if (!config.dryRun) {
@@ -287,8 +295,15 @@ async function processFile(
         format: config.files.format === 'auto' ? undefined : config.files.format,
       });
 
+      logger.debug(
+        `Existing file has ${existingExtract.units.length} units, merging with ${updatedUnits.length} updated units`
+      );
+
       // Merge new translations with existing content
       const mergedUnits = mergeTranslationUnits(existingExtract.units, updatedUnits);
+
+      const mergedWithTargets = mergedUnits.filter(u => u.target).length;
+      logger.debug(`Merged result: ${mergedWithTargets}/${mergedUnits.length} units have targets`);
 
       await writeTranslations(outputFilePath, existingContent, mergedUnits, existingExtract, {
         markAsTranslated: true,
