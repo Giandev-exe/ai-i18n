@@ -51962,8 +51962,12 @@ async function processFile(config, extractResult, targetLanguage, orchestrator, 
             logger_1.logger.info(`Creating new translation file: ${outputFilePath}`);
             (0, factory_3.createTranslationFile)(outputFilePath, updatedUnits, extractResult.formatInfo.format, config.files.sourceLanguage, targetLanguage, { markAsTranslated: true });
         }
-        // Update hash store
-        (0, hasher_1.addToHashStore)(hashStore, extractResult.filePath, extractResult.units);
+        // Update hash store only for units that successfully got translations
+        const successfullyTranslatedUnits = updatedUnits.filter(u => u.target);
+        if (successfullyTranslatedUnits.length > 0) {
+            (0, hasher_1.addToHashStore)(hashStore, extractResult.filePath, successfullyTranslatedUnits);
+            logger_1.logger.info(`Updated hash store with ${successfullyTranslatedUnits.length}/${extractResult.units.length} translated units`);
+        }
     }
     // Report
     const skipped = extractResult.units.length - unitsToTranslate.length;
