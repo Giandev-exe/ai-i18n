@@ -51767,6 +51767,16 @@ const errors_1 = __nccwpck_require__(6550);
 const output_path_1 = __nccwpck_require__(305);
 const HASH_STORE_FILE = '.i18n-hashes.json';
 /**
+ * Convert absolute file path to relative path from cwd.
+ * This ensures hash store keys are portable across different environments.
+ */
+function toRelativePath(filePath) {
+    const absolutePath = path.resolve(filePath);
+    const relativePath = path.relative(process.cwd(), absolutePath);
+    // Normalize to forward slashes for cross-platform consistency
+    return relativePath.replace(/\\/g, '/');
+}
+/**
  * Main entry point for the GitHub Action
  */
 async function run() {
@@ -51901,7 +51911,9 @@ async function processFile(config, extractResult, targetLanguage, orchestrator, 
     // Generate the language-specific output file path
     const outputFilePath = (0, output_path_1.getOutputFilePath)(extractResult.filePath, targetLanguage, config.files.sourceLanguage);
     // Diff against hash store to find changes
-    const diffResult = (0, differ_1.diffAgainstStore)(extractResult.filePath, extractResult.units, hashStore);
+    // Use relative path for portable hash store keys
+    const relativeFilePath = toRelativePath(extractResult.filePath);
+    const diffResult = (0, differ_1.diffAgainstStore)(relativeFilePath, extractResult.units, hashStore);
     // Get units that need translation
     const unitsToTranslate = (0, differ_1.getUnitsNeedingTranslation)(diffResult);
     if (unitsToTranslate.length === 0) {
@@ -51965,7 +51977,7 @@ async function processFile(config, extractResult, targetLanguage, orchestrator, 
         // Update hash store only for units that successfully got translations
         const successfullyTranslatedUnits = updatedUnits.filter(u => u.target);
         if (successfullyTranslatedUnits.length > 0) {
-            (0, hasher_1.addToHashStore)(hashStore, extractResult.filePath, successfullyTranslatedUnits);
+            (0, hasher_1.addToHashStore)(hashStore, relativeFilePath, successfullyTranslatedUnits);
             logger_1.logger.info(`Updated hash store with ${successfullyTranslatedUnits.length}/${extractResult.units.length} translated units`);
         }
     }
