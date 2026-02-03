@@ -25,6 +25,17 @@ import { getOutputFilePath } from './utils/output-path';
 const HASH_STORE_FILE = '.i18n-hashes.json';
 
 /**
+ * Convert absolute file path to relative path from cwd.
+ * This ensures hash store keys are portable across different environments.
+ */
+function toRelativePath(filePath: string): string {
+  const absolutePath = path.resolve(filePath);
+  const relativePath = path.relative(process.cwd(), absolutePath);
+  // Normalize to forward slashes for cross-platform consistency
+  return relativePath.replace(/\\/g, '/');
+}
+
+/**
  * Main entry point for the GitHub Action
  */
 async function run(): Promise<void> {
@@ -234,7 +245,9 @@ async function processFile(
   );
 
   // Diff against hash store to find changes
-  const diffResult = diffAgainstStore(extractResult.filePath, extractResult.units, hashStore);
+  // Use relative path for portable hash store keys
+  const relativeFilePath = toRelativePath(extractResult.filePath);
+  const diffResult = diffAgainstStore(relativeFilePath, extractResult.units, hashStore);
 
   // Get units that need translation
   const unitsToTranslate = getUnitsNeedingTranslation(diffResult);
@@ -303,7 +316,9 @@ async function processFile(
       const mergedUnits = mergeTranslationUnits(existingExtract.units, updatedUnits);
 
       const mergedWithTargets = mergedUnits.filter(u => u.target).length;
-      logger.info(`After merging with existing: ${mergedWithTargets}/${mergedUnits.length} units have targets`);
+      logger.info(
+        `After merging with existing: ${mergedWithTargets}/${mergedUnits.length} units have targets`
+      );
 
       await writeTranslations(outputFilePath, existingContent, mergedUnits, existingExtract, {
         markAsTranslated: true,
@@ -324,7 +339,7 @@ async function processFile(
     // Update hash store only for units that successfully got translations
     const successfullyTranslatedUnits = updatedUnits.filter(u => u.target);
     if (successfullyTranslatedUnits.length > 0) {
-      addToHashStore(hashStore, extractResult.filePath, successfullyTranslatedUnits);
+      addToHashStore(hashStore, relativeFilePath, successfullyTranslatedUnits);
       logger.info(
         `Updated hash store with ${successfullyTranslatedUnits.length}/${extractResult.units.length} translated units`
       );
