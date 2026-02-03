@@ -316,7 +316,9 @@ async function processFile(
       const mergedUnits = mergeTranslationUnits(existingExtract.units, updatedUnits);
 
       const mergedWithTargets = mergedUnits.filter(u => u.target).length;
-      logger.info(`After merging with existing: ${mergedWithTargets}/${mergedUnits.length} units have targets`);
+      logger.info(
+        `After merging with existing: ${mergedWithTargets}/${mergedUnits.length} units have targets`
+      );
 
       await writeTranslations(outputFilePath, existingContent, mergedUnits, existingExtract, {
         markAsTranslated: true,
